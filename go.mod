@@ -1,4 +1,4 @@
-module github.com/EkzikP/go_final_project
+module github.com/EkzikP/final_project
 
 go 1.23.4
 
