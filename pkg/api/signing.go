@@ -49,5 +49,5 @@ func signingHandler(w http.ResponseWriter, r *http.Request) {
 		//http.Redirect(w, r, "/login.html", http.StatusUnauthorized)
 		return
 	}
-	writeJson(w, map[string]string{"token": token})
+	writeJson(w, map[string]string{"token": token}, nil)
 }

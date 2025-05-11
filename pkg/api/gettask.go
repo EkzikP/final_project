@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"go1f/pkg/db"
 	"net/http"
 )
@@ -8,15 +10,15 @@ import (
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
-		output := "Задача не найдена"
-		writeJson(w, Out{Error: output})
+		err := errors.New("Задача не найдена")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 	task, err := db.GetTask(id)
 	if err != nil {
-		output := "Задача не найдена"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("Задача не найдена")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
-	writeJson(w, task)
+	writeJson(w, task, nil)
 }

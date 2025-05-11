@@ -40,6 +40,10 @@ func Tasks(limit int) ([]*Task, error) {
 		}
 		tasks = append(tasks, t)
 	}
+	err = rows.Err()
+	if err != nil {
+		return []*Task{}, err
+	}
 	return tasks, nil
 }
 
@@ -104,6 +108,10 @@ func SearchString(search string, limit int) ([]*Task, error) {
 		}
 		tasks = append(tasks, t)
 	}
+	err = rows.Err()
+	if err != nil {
+		return []*Task{}, err
+	}
 	return tasks, nil
 }
 
@@ -122,6 +130,10 @@ func SearchDate(search string, limit int) ([]*Task, error) {
 			return []*Task{}, err
 		}
 		tasks = append(tasks, t)
+	}
+	err = rows.Err()
+	if err != nil {
+		return []*Task{}, err
 	}
 	return tasks, nil
 }

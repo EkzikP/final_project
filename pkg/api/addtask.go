@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"go1f/pkg/db"
 	"net/http"
 	"strconv"
@@ -21,43 +22,42 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	//десериализуем полученный в запросе JSON
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		output := "ошибка десериализации JSON"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("ошибка чтения тела запроса")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
-		output := "ошибка десериализации JSON"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("ошибка десериализации JSON")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	//Проверяем, что поле Title не пустое.
 	if task.Title == "" {
-		output := "не указан заголовок задачи"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("не указан заголовок задачи")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	if err := checkDate(&task); err != nil {
-		output := "дата представлена в формате, отличном от 20060102"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("дата представлена в формате, отличном от 20060102")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	id, err := db.AddTask(&task)
 	if err != nil {
-		output := err.Error()
-		writeJson(w, Out{Error: output})
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
-	writeJson(w, Out{ID: strconv.FormatInt(id, 10)})
+	writeJson(w, Out{ID: strconv.FormatInt(id, 10)}, nil)
 }
 
 // Возвращаем ответный JSON клиенту
 
-func writeJson(w http.ResponseWriter, data any) {
+func writeJson(w http.ResponseWriter, data any, result error) {
 	resp, err := json.Marshal(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,6 +69,9 @@ func writeJson(w http.ResponseWriter, data any) {
 	//// так как все успешно, то статус OK
 	//w.WriteHeader(http.StatusOK)
 	// записываем сериализованные в JSON данные в тело ответа
+	if result != nil {
+		http.Error(w, result.Error(), http.StatusBadRequest)
+	}
 	w.Write(resp)
 }
 

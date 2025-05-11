@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"go1f/pkg/db"
 	"net/http"
 	"time"
@@ -17,27 +18,27 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			tasks, err := db.SearchString("%"+search+"%", 50)
 			if err != nil {
-				output := "ошибка запроса к базе данных"
-				writeJson(w, Out{Error: output})
+				err = fmt.Errorf("ошибка запроса к базе данных")
+				writeJson(w, Out{Error: err.Error()}, err)
 				return
 			}
-			writeJson(w, TasksResp{Tasks: tasks})
+			writeJson(w, TasksResp{Tasks: tasks}, nil)
 			return
 		}
 		tasks, err := db.SearchDate(searchDate.Format(layout), 50)
 		if err != nil {
-			output := "ошибка запроса к базе данных"
-			writeJson(w, Out{Error: output})
+			err = fmt.Errorf("ошибка запроса к базе данных")
+			writeJson(w, Out{Error: err.Error()}, err)
 			return
 		}
-		writeJson(w, TasksResp{Tasks: tasks})
+		writeJson(w, TasksResp{Tasks: tasks}, nil)
 		return
 	}
 	tasks, err := db.Tasks(50) // в параметре максимальное количество записей
 	if err != nil {
-		output := "ошибка запроса к базе данных"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("ошибка запроса к базе данных")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
-	writeJson(w, TasksResp{Tasks: tasks})
+	writeJson(w, TasksResp{Tasks: tasks}, nil)
 }

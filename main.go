@@ -7,50 +7,51 @@ import (
 	"go1f/pkg/api"
 	"go1f/pkg/db"
 	"go1f/pkg/server"
+	"log"
 	"os"
 )
 
 func main() {
 
 	_ = godotenv.Load()
-	TODO_PASSWORD := os.Getenv("TODO_PASSWORD")
-	api.PASS = TODO_PASSWORD
+	todoPassword := os.Getenv("TODO_PASSWORD")
+	api.PASS = todoPassword
 
-	TODO_DBFILE := os.Getenv("TODO_DBFILE")
-	if TODO_DBFILE == "" {
-		TODO_DBFILE = "scheduler.db"
+	todoDbfile := os.Getenv("TODO_DBFILE")
+	if todoDbfile == "" {
+		todoDbfile = "scheduler.db"
 	}
 
-	DB, err := sql.Open("sqlite", TODO_DBFILE)
+	DB, err := sql.Open("sqlite", todoDbfile)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
 	db.DB = DB
 	defer DB.Close()
 
-	err = db.Init(TODO_DBFILE)
+	err = db.Init(todoDbfile)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
 
 	// Запуск WEB сервера
-	TODO_PORT := os.Getenv("TODO_PORT")
-	if TODO_PORT == "" {
-		TODO_PORT = "7540"
+	todoPort := os.Getenv("TODO_PORT")
+	if todoPort == "" {
+		todoPort = "7540"
 	}
-	str := startServer(TODO_PORT)
-	if str != "" {
-		fmt.Println(str)
+	err = startServer(todoPort)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
 
-func startServer(port string) string {
+func startServer(port string) error {
 	err := server.StartServer(port)
 	if err != nil {
-		return fmt.Sprintf("Ошибка при запуске сервера: %s", err.Error())
+		return fmt.Errorf("Ошибка при запуске сервера: %w", err)
 	}
-	return ""
+	return nil
 }

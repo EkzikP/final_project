@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"go1f/pkg/db"
 	"net/http"
 	"time"
@@ -41,40 +43,42 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 		updateTaskHandler(w, r)
 	case http.MethodDelete:
 		deleteTaskHandler(w, r)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
 func doneHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
-		output := "Не указан id задачи"
-		writeJson(w, Out{Error: output})
+		err := errors.New("Не указан id задачи")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	err := doneTask(id)
 	if err != nil {
-		output := "Ошибка изменения статуса задачи"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("Ошибка изменения статуса задачи")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
-	writeJson(w, struct{}{})
+	writeJson(w, struct{}{}, nil)
 }
 
 func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	if id == "" {
-		output := "Не указан id задачи"
-		writeJson(w, Out{Error: output})
+		err := errors.New("Не указан id задачи")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
 
 	err := db.DeleteTask(id)
 	if err != nil {
-		output := "Ошибка удаления задачи"
-		writeJson(w, Out{Error: output})
+		err = fmt.Errorf("Ошибка удаления задачи")
+		writeJson(w, Out{Error: err.Error()}, err)
 		return
 	}
-	writeJson(w, struct{}{})
+	writeJson(w, struct{}{}, nil)
 }
